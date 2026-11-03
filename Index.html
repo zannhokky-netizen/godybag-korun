@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TikTok Live Tracker - Sepi & Banyak Koin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0b0c10;
+      color: #e0e0e0;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bg-card { background-color: #12141c; }
+    .bg-card-hover:hover { background-color: #1a1d29; }
+    .border-custom { border-color: #232736; }
+    .text-tt-pink { color: #ff2c55; }
+    .bg-tt-pink { background-color: #ff2c55; }
+    .bg-tt-pink:hover { background-color: #e02447; }
+    
+    .badge-high-ratio {
+      background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(255, 44, 85, 0.2));
+      border: 1px solid rgba(234, 179, 8, 0.5);
+      color: #fef08a;
+    }
+    
+    .badge-sepi {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      color: #86efac;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0c10; }
+    ::-webkit-scrollbar-thumb { background: #232736; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen pb-12">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-[#0f1118]/95 backdrop-blur border-b border-[#232736] px-4 py-3">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-tt-pink flex items-center justify-center font-bold text-white shadow-lg shadow-pink-500/30">
+          🎁
+        </div>
+        <div>
+          <h1 class="text-base font-extrabold tracking-wide text-white leading-tight">
+            TikTok <span class="text-tt-pink">Live Tracker</span>
+          </h1>
+          <p class="text-[10px] text-yellow-400 font-semibold">🔥 Hunter Koin: Live Sepi Penonton</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 bg-[#181b26] border border-[#2c3245] px-2.5 py-1 rounded-full">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+        </span>
+        <span id="live-counter" class="text-xs font-mono font-bold text-green-400">1,409,280</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-md mx-auto px-3 pt-3">
+    
+    <!-- SEARCH & REFRESH -->
+    <div class="flex items-center gap-2 mb-3">
+      <div class="relative flex-1">
+        <input 
+          type="text" 
+          id="search-input"
+          placeholder="Cari ID Host / Link..." 
+          class="w-full bg-[#151822] border border-[#252a3b] rounded-xl px-3 py-2 pl-9 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-tt-pink transition"
+        >
+        <i data-lucide="search" class="w-4 h-4 text-gray-500 absolute left-3 top-2.5"></i>
+      </div>
+      <button 
+        onclick="refreshData()"
+        class="bg-[#181b26] hover:bg-[#222738] text-gray-300 p-2 rounded-xl border border-[#2c3245] flex items-center justify-center transition active:scale-95"
+      >
+        <i data-lucide="rotate-cw" class="w-4 h-4 text-gray-400" id="refresh-icon"></i>
+      </button>
+    </div>
+
+    <!-- MAIN STRATEGY FILTER -->
+    <div class="grid grid-cols-2 gap-1.5 p-1 bg-[#12141c] rounded-xl border border-[#232736] mb-3 text-xs font-semibold">
+      <button onclick="setModeFilter('high_ratio')" id="btn-mode-ratio" class="py-2 rounded-lg bg-yellow-500 text-black font-extrabold transition shadow-sm text-center flex items-center justify-center gap-1">
+        🔥 Sepi & Banyak Koin
+      </button>
+      <button onclick="setModeFilter('all')" id="btn-mode-all" class="py-2 rounded-lg text-gray-400 hover:text-white transition text-center">
+        📋 Semua Live
+      </button>
+    </div>
+
+    <!-- REGION FILTER TABS -->
+    <div class="grid grid-cols-3 gap-1.5 p-1 bg-[#12141c] rounded-xl border border-[#232736] mb-3 text-xs font-semibold">
+      <button onclick="setRegionFilter('all')" id="btn-reg-all" class="py-1.5 rounded-lg bg-tt-pink text-white font-bold transition shadow-sm text-center">
+        🌏 Semua
+      </button>
+      <button onclick="setRegionFilter('indo')" id="btn-reg-indo" class="py-1.5 rounded-lg text-gray-400 hover:text-white transition text-center">
+        🇮🇩 Indo Live
+      </button>
+      <button onclick="setRegionFilter('foreign')" id="btn-reg-foreign" class="py-1.5 rounded-lg text-gray-400 hover:text-white transition text-center">
+        🌐 Orang Luar
+      </button>
+    </div>
+
+    <!-- CATEGORY TABS -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2 mb-2 text-xs">
+      <button onclick="setCategoryFilter('all')" class="cat-btn px-3 py-1.5 rounded-lg bg-[#222738] text-white border border-[#333a52] whitespace-nowrap font-medium" data-cat="all">
+        Semua Peti
+      </button>
+      <button onclick="setCategoryFilter('ruong_lon')" class="cat-btn px-3 py-1.5 rounded-lg bg-[#141722] text-gray-400 border border-[#232736] whitespace-nowrap font-medium hover:text-white" data-cat="ruong_lon">
+        Rương lớn (Koin Melimpah)
+      </button>
+      <button onclick="setCategoryFilter('tui')" class="cat-btn px-3 py-1.5 rounded-lg bg-[#141722] text-gray-400 border border-[#232736] whitespace-nowrap font-medium hover:text-white" data-cat="tui">
+        Túi (Kantong)
+      </button>
+      <button onclick="setCategoryFilter('ruong_nho')" class="cat-btn px-3 py-1.5 rounded-lg bg-[#141722] text-gray-400 border border-[#232736] whitespace-nowrap font-medium hover:text-white" data-cat="ruong_nho">
+        Rương nhỏ
+      </button>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="flex items-center justify-between text-[11px] text-gray-400 px-1 mb-2 font-mono">
+      <span>Ditemukan: <strong id="visible-count" class="text-white">0</strong> Room</span>
+      <span class="text-xs text-yellow-400 font-semibold flex items-center gap-1">
+        ⚡ Peluang Menang Koin Tinggi
+      </span>
+    </div>
+
+    <!-- LIVE LIST -->
+    <div id="live-list" class="space-y-2.5"></div>
+
+  </main>
+
+  <script>
+    // DATA DATABASE (DIFOKUSKAN PADA LIVE SEPI PENONTON & BANYAK KOIN)
+    const rawData = [
+      // HIGH RATIO & SEPI (PRIORITAS UTAMA)
+      { id: 'link4109280', username: 'sheikha_al_arab', name: 'Sheikha Dubai', box: '1000/25', ratio: 40.0, view: 25, timeStart: '12:17:10', timeEnd: '12:20:10', cat: 'ruong_lon', region: 'foreign', country: '🇦🇪 AE' },
+      { id: 'link4109210', username: 'jordan_taylor_us', name: 'Jordan Taylor', box: '500/14', ratio: 35.7, view: 14, timeStart: '12:14:40', timeEnd: '12:17:40', cat: 'ruong_lon', region: 'foreign', country: '🇺🇸 US' },
+      { id: 'link4109132', username: 'hans_berlin_tech', name: 'Hans Mueller', box: '500/18', ratio: 27.7, view: 18, timeStart: '12:10:30', timeEnd: '12:13:30', cat: 'ruong_lon', region: 'foreign', country: '🇩🇪 DE' },
+      { id: 'link4109255', username: 'kedai_marwa_live', name: 'Kedai Marwa Official', box: '500/20', ratio: 25.0, view: 20, timeStart: '12:17:30', timeEnd: '12:20:30', cat: 'ruong_lon', region: 'indo', country: '🇮🇩 ID' },
+      { id: 'link4109175', username: 'budi_santoso_gaming', name: 'Budi Santoso', box: '1000/40', ratio: 25.0, view: 40, timeStart: '12:13:00', timeEnd: '12:16:00', cat: 'ruong_lon', region: 'indo', country: '🇮🇩 ID' },
+      { id: 'link4109240', username: 'rizky_gamin21', name: 'Rizky MLBB', box: '200/12', ratio: 16.6, view: 12, timeStart: '12:16:00', timeEnd: '12:19:00', cat: 'ruong_nho', region: 'indo', country: '🇮🇩 ID' },
+      { id: 'link4109199', username: 'moohamed_shaban', name: 'Mohamed Shaban', box: '70/5', ratio: 14.0, view: 5, timeStart: '12:13:50', timeEnd: '12:16:50', cat: 'tui', region: 'foreign', country: '🇪🇬 EG' },
+      { id: 'link4109185', username: 'charlotte_london', name: 'Charlotte UK', box: '150/11', ratio: 13.6, view: 11, timeStart: '12:13:00', timeEnd: '12:16:00', cat: 'ruong_nho', region: 'foreign', country: '🇬🇧 GB' },
+      { id: 'link4109170', username: 'carlos_madrid_live', name: 'Carlos Santos', box: '300/22', ratio: 13.6, view: 22, timeStart: '12:12:10', timeEnd: '12:15:10', cat: 'ruong_lon', region: 'foreign', country: '🇪🇸 ES' },
+      { id: 'link4109144', username: 'bang_dodo_live', name: 'Bang Dodo', box: '200/18', ratio: 11.1, view: 18, timeStart: '12:11:00', timeEnd: '12:14:00', cat: 'ruong_nho', region: 'indo', country: '🇮🇩 ID' },
+      { id: 'link4109266', username: 'kim_min_jee_kr', name: 'Kim Min Jee', box: '200/19', ratio: 10.5, view: 19, timeStart: '12:16:40', timeEnd: '12:19:40', cat: 'ruong_nho', region: 'foreign', country: '🇰🇷 KR' },
+      { id: 'link4109150', username: 'mei_ling_taiwan', name: 'Mei Ling TW', box: '80/9', ratio: 8.8, view: 9, timeStart: '12:11:20', timeEnd: '12:14:20', cat: 'tui', region: 'foreign', country: '🇹🇼 TW' },
+      { id: 'link4109287', username: 'zann_anakbaik', name: 'Zann AnakBaik', box: '100/15', ratio: 8.5, view: 15, timeStart: '12:18:00', timeEnd: '12:21:00', cat: 'tui', region: 'indo', country: '🇮🇩 ID' },
+      { id: 'link4109160', username: 'via_amelia_real', name: 'Via Amelia', box: '50/8', ratio: 6.2, view: 8, timeStart: '12:12:00', timeEnd: '12:15:00', cat: 'tui', region: 'indo', country: '🇮🇩 ID' },
+
+      // AMBANG PENONTON LAINNYA
+      { id: 'link4109299', username: 'rabbi_shah_official', name: 'Rabbi Shah', box: '50/31', ratio: 1.6, view: 31, timeStart: '12:17:50', timeEnd: '12:20:50', cat: 'tui', region: 'foreign', country: '🇵🇰 PK' },
+      { id: 'link4109295', username: 'yui_note8', name: 'ゆい (Yui Channel)', box: '20/16', ratio: 1.2, view: 16, timeStart: '12:17:40', timeEnd: '12:20:40', cat: 'tui', region: 'foreign', country: '🇯🇵 JP' },
+      { id: 'link4109243', username: 'bonka.net.vn7799', name: 'Bonka Vietnam', box: '50/20', ratio: 2.5, view: 20, timeStart: '12:16:10', timeEnd: '12:19:10', cat: 'ruong_nho', region: 'foreign', country: '🇻🇳 VN' }
+    ];
+
+    let currentMode = 'high_ratio'; // Default prioritize high ratio (sepi + koin melimpah)
+    let currentRegion = 'all';
+    let currentCategory = 'all';
+    let searchQuery = '';
+
+    lucide.createIcons();
+
+    function renderList() {
+      const listContainer = document.getElementById('live-list');
+      listContainer.innerHTML = '';
+
+      let filtered = rawData.filter(item => {
+        if (currentMode === 'high_ratio' && item.ratio < 8.0) return false;
+        if (currentRegion !== 'all' && item.region !== currentRegion) return false;
+        if (currentCategory !== 'all' && item.cat !== currentCategory) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return item.username.toLowerCase().includes(q) || item.name.toLowerCase().includes(q) || item.id.toLowerCase().includes(q);
+        }
+        return true;
+      });
+
+      // AUTO SORT BY RATIO TERTIANGGI (KOIN TERBANYAK PER PENONTON SEPI)
+      filtered.sort((a, b) => b.ratio - a.ratio);
+
+      document.getElementById('visible-count').textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        listContainer.innerHTML = `
+          <div class="text-center py-12 bg-card rounded-2xl border border-custom">
+            <i data-lucide="ghost" class="w-10 h-10 text-gray-600 mx-auto mb-2 animate-bounce"></i>
+            <p class="text-sm font-semibold text-gray-400">Tidak ada Room Live ditemukan</p>
+            <p class="text-xs text-gray-600 mt-1">Coba ganti mode filter atau kata kunci</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "bg-card bg-card-hover border border-custom rounded-xl p-3 flex items-center justify-between transition-all duration-200 shadow-sm hover:border-yellow-500/40";
+        
+        const isIndo = item.region === 'indo';
+        const isSepi = item.view <= 30;
+        const targetUrl = `https://www.tiktok.com/@${item.username}/live`;
+
+        card.innerHTML = `
+          <div class="space-y-1.5 flex-1 pr-2">
+            <!-- Top Line: ID & Status Sepi -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] font-mono font-bold text-gray-300 bg-[#1a1d29] px-1.5 py-0.5 rounded border border-[#2b3044]">
+                ${item.timeStart.substring(0, 5)}
+              </span>
+              <span class="text-[11px] font-mono text-cyan-400 font-semibold tracking-tight">
+                ${item.id}
+              </span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${isIndo ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-blue-500/20 text-blue-300 border border-blue-500/40'}">
+                ${item.country}
+              </span>
+              ${isSepi ? `<span class="text-[10px] px-1.5 py-0.5 rounded font-extrabold badge-sepi">🔥 SEPI (${item.view} 👥)</span>` : ''}
+            </div>
+
+            <!-- Profile Host -->
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="user" class="w-3.5 h-3.5 text-pink-500"></i>
+              <span class="text-xs font-bold text-white truncate max-w-[140px]">${item.name}</span>
+              <span class="text-[10px] text-gray-400 font-mono">@${item.username}</span>
+            </div>
+
+            <!-- Box & High Ratio Indicator -->
+            <div class="flex items-center gap-2 text-[11px] font-mono">
+              <span class="text-yellow-400 font-bold bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20">
+                Box: ${item.box}
+              </span>
+              <span class="badge-high-ratio font-extrabold px-2 py-0.5 rounded text-xs shadow-sm">
+                Ratio: ${item.ratio.toFixed(1)} xu
+              </span>
+            </div>
+          </div>
+
+          <!-- DIRECT BUTTON TO TIKTOK LIVE -->
+          <div class="pl-2 border-l border-[#232736]">
+            <a 
+              href="${targetUrl}" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="inline-flex items-center justify-center bg-tt-pink hover:bg-pink-600 text-white font-extrabold text-xs px-3.5 py-2.5 rounded-xl shadow-lg shadow-pink-500/20 active:scale-95 transition-all text-center min-w-[76px]"
+            >
+              Mở Link
+            </a>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function setModeFilter(mode) {
+      currentMode = mode;
+      const btnRatio = document.getElementById('btn-mode-ratio');
+      const btnAll = document.getElementById('btn-mode-all');
+      
+      if (mode === 'high_ratio') {
+        btnRatio.className = "py-2 rounded-lg bg-yellow-500 text-black font-extrabold transition shadow-sm text-center flex items-center justify-center gap-1";
+        btnAll.className = "py-2 rounded-lg text-gray-400 hover:text-white transition text-center";
+      } else {
+        btnAll.className = "py-2 rounded-lg bg-tt-pink text-white font-extrabold transition shadow-sm text-center flex items-center justify-center gap-1";
+        btnRatio.className = "py-2 rounded-lg text-gray-400 hover:text-white transition text-center";
+      }
+      renderList();
+    }
+
+    function setRegionFilter(reg) {
+      currentRegion = reg;
+      document.querySelectorAll('#btn-reg-all, #btn-reg-indo, #btn-reg-foreign').forEach(btn => {
+        btn.className = "py-1.5 rounded-lg text-gray-400 hover:text-white transition text-center";
+      });
+      const activeBtn = document.getElementById(`btn-reg-${reg}`);
+      if (activeBtn) activeBtn.className = "py-1.5 rounded-lg bg-tt-pink text-white font-bold transition shadow-sm text-center";
+      renderList();
+    }
+
+    function setCategoryFilter(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if (btn.getAttribute('data-cat') === cat) {
+          btn.className = "cat-btn px-3 py-1.5 rounded-lg bg-[#222738] text-white border border-[#333a52] whitespace-nowrap font-medium";
+        } else {
+          btn.className = "cat-btn px-3 py-1.5 rounded-lg bg-[#141722] text-gray-400 border border-[#232736] whitespace-nowrap font-medium hover:text-white";
+        }
+      });
+      renderList();
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderList();
+    });
+
+    function refreshData() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('animate-spin');
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        renderList();
+      }, 400);
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
